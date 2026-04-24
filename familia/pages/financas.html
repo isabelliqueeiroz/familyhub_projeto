@@ -4,45 +4,61 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FamilyHub — Finanças</title>
+  
   <link rel="stylesheet" href="../assets/css/style.css">
+  
   <style>
+    /* =========================================
+       ESTILOS ESPECÍFICOS DE FINANÇAS
+       ========================================= */
+       
+    /* Botões de filtro (Todas, Receitas, Despesas) */
     .fin-tab {
-      padding: 8px 18px;
-      border-radius: var(--radius-sm);
-      font-size: .88rem;
+      padding: 8px 18px;  
+      border-radius: var(--radius-sm); 
+      font-size: .88rem; 
       font-weight: 600;
       border: 1.5px solid var(--border);
       background: var(--card-bg);
       color: var(--text-muted);
       cursor: pointer;
-      transition: all var(--transition);
+      transition: all var(--transition); /* Animação suave ao interagir */
     }
+    /* Cores ativas baseadas no tipo de filtro clicado */
     .fin-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
     .fin-tab.receita.active { background: var(--success); border-color: var(--success); }
     .fin-tab.despesa.active { background: var(--danger);  border-color: var(--danger); }
 
+    /* Estrutura de cada linha da lista de transações */
     .trans-row {
-      display: flex;
+      display: flex; /* Alinha os itens lado a lado horizontalmente */
       align-items: center;
-      gap: 14px;
+      gap: 14px; /* Espaço entre ícone, texto e valor */
       padding: 13px 0;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid var(--border); /* Linha divisória */
     }
-    .trans-row:last-child { border-bottom: none; }
+    .trans-row:last-child { border-bottom: none; } /* Remove a linha do último item */
+    
+    /* Bloco do ícone da transação */
     .trans-icon {
       width: 40px; height: 40px;
       border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
+      display: flex; align-items: center; justify-content: center; /* Centraliza o emoji */
       font-size: 1rem;
-      flex-shrink: 0;
+      flex-shrink: 0; /* Impede que o ícone esprema se houver muito texto */
     }
-    .trans-desc { flex: 1; }
+    
+    /* Textos descritivos (Título e data/categoria) */
+    .trans-desc { flex: 1; } /* Ocupa todo o espaço restante empurrando o valor para a direita */
     .trans-desc .t-name { font-size: .9rem; font-weight: 600; }
     .trans-desc .t-meta { font-size: .78rem; color: var(--text-muted); margin-top: 2px; }
+    
+    /* Valores monetários dinheiro */
     .trans-val { font-size: 1rem; font-weight: 700; min-width: 100px; text-align: right; }
-    .trans-val.receita { color: var(--success); }
-    .trans-val.despesa { color: var(--danger); }
+    .trans-val.receita { color: var(--success); } /* Verde para positivo */
+    .trans-val.despesa { color: var(--danger); }  /* Vermelho para negativo */
 
+    /* Cartões de Metas */
     .goal-card {
       background: var(--card-bg);
       border-radius: var(--radius);
@@ -51,6 +67,7 @@
       box-shadow: var(--shadow-sm);
       transition: all var(--transition);
     }
+    /* Efeito de elevação ao passar o mouse */
     .goal-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
   </style>
 </head>
@@ -77,7 +94,6 @@
     <a href="notificacoes.html" class="nav-item"><span class="nav-icon">🔔</span> Notificações <span class="nav-badge">3</span></a>
     <div class="nav-section-label">Conta</div>
     <a href="perfil.html" class="nav-item"><span class="nav-icon">👤</span> Meu Perfil</a>
-  </nav>
   </nav>
 </aside>
 
@@ -138,6 +154,7 @@
     </div>
 
     <div class="grid-2-1">
+      
       <div class="card">
         <div class="card-header">
           <div>
@@ -154,6 +171,7 @@
       </div>
 
       <div style="display:flex;flex-direction:column;gap:16px">
+        
         <div class="card">
           <div class="card-header">
             <div class="card-title">🍩 Por Categoria</div>
@@ -184,11 +202,14 @@
       <div class="modal-title">💰 Nova Transação</div>
       <button class="modal-close" onclick="closeModal('modal-add-trans')">✕</button>
     </div>
+    
     <div style="display:flex;gap:8px;margin-bottom:16px">
       <button class="fin-tab receita" id="btn-tipo-receita" onclick="setTransTipo('receita')" style="flex:1">✅ Receita</button>
       <button class="fin-tab despesa" id="btn-tipo-despesa" onclick="setTransTipo('despesa')" style="flex:1">❌ Despesa</button>
     </div>
+    
     <input type="hidden" id="trans-tipo" value="receita">
+    
     <div class="form-group">
       <label class="form-label">Descrição *</label>
       <input type="text" class="form-control" id="trans-desc">
@@ -221,6 +242,7 @@
 <script src="../assets/js/app.js"></script>
 <script src="../assets/js/layout.js"></script>
 <script>
+// "Banco de dados" em memória (Arrays simulando uma API local)
 let transactions = [
   { id:1, tipo:'receita', desc:'Salário João', valor:5500, cat:'Salário', data:'2026-04-05' },
   { id:2, tipo:'receita', desc:'Salário Maria', valor:4200, cat:'Salário', data:'2026-04-05' },
@@ -232,46 +254,80 @@ let metas = [
   { id:1, titulo:'Viagem de férias', valor:8000, atual:3200, prazo:'2026-12-01', icone:'✈️' }
 ];
 
+// Estado atual do filtro da lista de transações
 let transFilter = 'todas';
+
+// Dicionários para mapear Categorias a seus Emojis e Cores no Gráfico
 const CAT_ICONS = { 'Salário':'💵','Extra':'💡','Moradia':'🏠','Alimentação':'🍽️','Educação':'📚','Saúde':'💊','Contas':'📄','Transporte':'🚗','Lazer':'🎮','Outros':'📦' };
 const CAT_COLORS_FIN = { 'Moradia':'#6C63FF','Alimentação':'#FF6584','Educação':'#43C6AC','Saúde':'#FFB347','Contas':'#FF5C5C','Transporte':'#9B59B6','Lazer':'#3498DB','Outros':'#8A94A6' };
 
+/**
+ * Função principal que orquestra a atualização completa do painel.
+ * Deve ser chamada sempre que os dados (transactions/metas) mudarem.
+ */
 function renderAll() {
-  updateStats();
-  renderTrans();
-  renderMetas();
-  renderCharts();
+  updateStats(); // Atualiza os blocos superiores (Saldo, Receitas, etc)
+  renderTrans(); // Atualiza a lista HTML de transações
+  renderMetas(); // Atualiza a listagem de barras de progresso das metas
+  renderCharts(); // Atualiza o gráfico de pizza (donut)
 }
 
+/**
+ * Calcula totais e uso da renda.
+ */
 function updateStats() {
+  // Filtra as receitas e soma (reduce) os valores. Se não houver, retorna 0.
   const receitas = transactions.filter(t => t.tipo === 'receita').reduce((a,b) => a + b.valor, 0);
+  // Filtra as despesas e soma os valores
   const despesas = transactions.filter(t => t.tipo === 'despesa').reduce((a,b) => a + b.valor, 0);
+  
   const saldo = receitas - despesas;
+  
+  // Regra de 3 básica para descobrir qual porcentagem da renda foi gasta.
   const taxa = receitas > 0 ? Math.round((despesas / receitas) * 100) : 0;
   
+  // Atualiza o DOM (Elementos HTML), formatando os valores para moeda (1000 => 1.000,00)
   document.getElementById('stat-receitas').textContent = 'R$ ' + receitas.toLocaleString('pt-BR', {minimumFractionDigits: 2});
   document.getElementById('stat-despesas').textContent = 'R$ ' + despesas.toLocaleString('pt-BR', {minimumFractionDigits: 2});
   document.getElementById('stat-saldo').textContent = 'R$ ' + saldo.toLocaleString('pt-BR', {minimumFractionDigits: 2});
   document.getElementById('stat-taxa').textContent = taxa + '%';
 }
 
+/**
+ * Desenha as linhas da tabela de transações baseada no filtro selecionado
+ */
 function renderTrans() {
+  // Se for "todas" não filtra. Se não, filtra só as que o tipo bate com a variável global 'transFilter'
   let filtered = transFilter === 'todas' ? transactions : transactions.filter(t => t.tipo === transFilter);
+  
   document.getElementById('trans-count').textContent = `${filtered.length} transação(ões)`;
+  
+  // .sort(...) ordena da data mais recente (b) para a mais antiga (a)
+  // .map(...) transforma cada objeto javascript numa string de código HTML
   document.getElementById('trans-list').innerHTML = filtered.sort((a,b) => new Date(b.data) - new Date(a.data)).map(t => `
     <div class="trans-row">
-      <div class="trans-icon" style="background:${t.tipo==='receita'?'#EDFAF4':'#FFF0F0'};color:${t.tipo==='receita'?'var(--success)':'var(--danger)'}">${CAT_ICONS[t.cat]||'💰'}</div>
+      <div class="trans-icon" style="background:${t.tipo==='receita'?'#EDFAF4':'#FFF0F0'};color:${t.tipo==='receita'?'var(--success)':'var(--danger)'}">
+        ${CAT_ICONS[t.cat]||'💰'}
+      </div>
       <div class="trans-desc">
         <div class="t-name">${t.desc}</div>
         <div class="t-meta">${t.cat} · ${new Date(t.data+'T00:00:00').toLocaleDateString('pt-BR')}</div>
       </div>
-      <div class="trans-val ${t.tipo}">${t.tipo==='receita'?'+':'-'} R$ ${t.valor.toFixed(2).replace('.',',')}</div>
+      <div class="trans-val ${t.tipo}">
+        ${t.tipo==='receita'?'+':'-'} R$ ${t.valor.toFixed(2).replace('.',',')}
+      </div>
       <button class="btn btn-danger btn-sm btn-icon" onclick="deleteTrans(${t.id})">🗑️</button>
-    </div>`).join('') || '<p class="empty-state">Nenhuma transação encontrada.</p>';
+    </div>`
+  ).join('') || '<p class="empty-state">Nenhuma transação encontrada.</p>'; 
+  // .join('') transforma a array de HTML num bloco de texto só. Se vazio, exibe o empty-state.
 }
 
+/**
+ * Desenha os cartões de meta
+ */
 function renderMetas() {
   document.getElementById('metas-list').innerHTML = metas.map(m => {
+    // Math.min garante que o progresso da barra nunca passe de 100% caso a meta seja superada
     const pct = Math.min(100, Math.round((m.atual / m.valor) * 100));
     return `<div class="goal-card">
       <div style="display:flex;justify-content:space-between;margin-bottom:8px">
@@ -284,20 +340,30 @@ function renderMetas() {
   }).join('');
 }
 
+/**
+ * Prepara os dados de despesas por categoria e invoca o desenho do gráfico
+ */
 function renderCharts() {
   const despesas = transactions.filter(t => t.tipo === 'despesa');
+  
+  // Condicional de segurança caso o usuário delete todas as despesas
   if(despesas.length === 0) {
       document.getElementById('donut-legend').innerHTML = '<p class="empty-state">Sem despesas para exibir.</p>';
       return;
   }
+  
+  // Agrupa e soma as despesas por categoria num objeto dinâmico
   const cats = {};
   despesas.forEach(t => { cats[t.cat] = (cats[t.cat] || 0) + t.valor; });
-  const labels = Object.keys(cats);
-  const values = Object.values(cats);
-  const colors = labels.map(l => CAT_COLORS_FIN[l] || '#8A94A6');
+  
+  const labels = Object.keys(cats); // Ex: ['Moradia', 'Alimentação']
+  const values = Object.values(cats); // Ex: [1800, 650]
+  const colors = labels.map(l => CAT_COLORS_FIN[l] || '#8A94A6'); // Pega as cores do dicionário
 
+  // Presume-se que drawDonutChart esteja em `layout.js` 
   drawDonutChart('chart-donut', values, colors, labels);
   
+  // Calcula a legenda e a porcentagem individual de cada categoria
   const total = values.reduce((a,b) => a+b, 0);
   document.getElementById('donut-legend').innerHTML = labels.map((l,i) => `
     <div style="display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:4px">
@@ -306,14 +372,20 @@ function renderCharts() {
     </div>`).join('');
 }
 
+/**
+ * Disparada ao clicar em "Salvar" no Modal de Nova Transação
+ */
 function addTrans() {
   const desc = document.getElementById('trans-desc').value;
   const valor = parseFloat(document.getElementById('trans-valor').value);
   const data = document.getElementById('trans-data').value;
+  
+  // Trava de segurança: impede salvar vazio
   if(!desc || !valor || !data) return;
   
+  // Empurra pro array simulando o banco de dados
   transactions.push({ 
-    id: Date.now(), 
+    id: Date.now(), // Gera um ID único baseado na milissegundo atual
     tipo: document.getElementById('trans-tipo').value, 
     desc, 
     valor, 
@@ -321,30 +393,48 @@ function addTrans() {
     data 
   });
   
-  closeModal('modal-add-trans');
-  renderAll(); // Atualiza tudo automaticamente
+  closeModal('modal-add-trans'); // Função de layout.js que esconde a tela sobreposta
+  renderAll(); // Força o painel inteiro a se repintar usando o array novo
 }
 
+/**
+ * Remove uma transação baseado no ID
+ */
 function deleteTrans(id) {
+  // Filtra o array, mantendo só os que tem ID diferente do solicitado
   transactions = transactions.filter(t => t.id !== id);
   renderAll(); // Recalcula saldo e gastos
 }
 
+/**
+ * Atualiza o visual do botão de aba clicado e refaz a lista
+ */
 function filterTrans(filter, btn) {
   transFilter = filter;
+  // Remove classe '.active' de todas as abas
   document.querySelectorAll('.fin-tab').forEach(b => b.classList.remove('active'));
+  // Adiciona '.active' só na aba que foi clicada (passada via parâmetro 'this')
   btn.classList.add('active');
   renderTrans();
 }
 
+/**
+ * Atualiza o input oculto e estilo dos botões dentro do Modal baseado no tipo
+ */
 function setTransTipo(tipo) {
   document.getElementById('trans-tipo').value = tipo;
+  // .toggle(classe, condicao) -> adiciona a classe se for true, remove se for false
   document.getElementById('btn-tipo-receita').classList.toggle('active', tipo === 'receita');
   document.getElementById('btn-tipo-despesa').classList.toggle('active', tipo === 'despesa');
 }
 
+/**
+ * Roda automaticamente quando o navegador termina de ler o HTML da página
+ */
 document.addEventListener('DOMContentLoaded', () => {
+  // Pré-preenche o campo de Data no modal com a data de "hoje"
   document.getElementById('trans-data').value = new Date().toISOString().split('T')[0];
+  // Inicia a aplicação na primeira carga
   renderAll();
 });
 </script>
